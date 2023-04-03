@@ -1,0 +1,119 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int         @id @default(autoincrement())
+  firstName  String
+  lastName   String
+  email      String      @unique
+  password   String
+  role       UserRole
+  pictureUrl String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  client     Client?
+  freelancer Freelancer?
+}
+
+enum UserRole {
+  freelancer
+  client
+}
+
+model Freelancer {
+  id         Int       @id @default(autoincrement())
+  jobs       Job[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  userId     Int       @unique
+  user       User      @relation(fields: [userId], references: [id])
+  Rating     Rating[]
+  Category   Category? @relation(fields: [categoryId], references: [id])
+  categoryId Int?
+  Skill      Skill[]
+}
+
+model Client {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Rating    Rating[]
+  Job       Job[]
+  payments Payment[]
+}
+
+model Category {
+  id         Int          @id @default(autoincrement())
+  name       String
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  Freelancer Freelancer[]
+  jobs       Job[]
+  Skill      Skill[]
+}
+
+model Job {
+  id           Int        @id @default(autoincrement())
+  title        String
+  description  String
+  priceType    String // Can be 'FIXED_PRICE' or 'HOURLY'
+  price        Int
+  level        String // Can be 'JUNIOR', 'INTERMEDIATE', or 'SENIOR'
+  categoryId   Int
+  freelancerId Int
+  clientId     Int
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  Category     Category   @relation(fields: [categoryId], references: [id])
+  Freelancer   Freelancer @relation(fields: [freelancerId], references: [id])
+  Client       Client     @relation(fields: [clientId], references: [id])
+  ratings      Rating[]
+  Skill        Skill[]
+}
+
+model Rating {
+  id           Int         @id @default(autoincrement())
+  jobId        Int?
+  rating       Int
+  comment      String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  Job          Job?        @relation(fields: [jobId], references: [id])
+  freelancer   Freelancer? @relation(fields: [freelancerId], references: [id])
+  freelancerId Int?
+  client       Client?     @relation(fields: [clientId], references: [id])
+  clientId     Int?
+}
+
+model Skill {
+  id           Int        @id @default(autoincrement())
+  name         String
+  description  String?
+  Category     Category   @relation(fields: [categoryId], references: [id])
+  categoryId   Int
+  Freelancer   Freelancer @relation(fields: [freelancerId], references: [id])
+  freelancerId Int
+  Job          Job?       @relation(fields: [jobId], references: [id])
+  jobId        Int?
+}
+
+
+model Payment {
+  payment_id Int @unique @id @default(autoincrement())
+  payment_amount Int
+  payment_made_by Client @relation(fields: [payment_client_id], references: [id])
+  payment_client_id Int
+  payment_created_at DateTime @default(now())
+}

@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+@layer{
+ body{
+  @apply bg-web-app bg-cover bg-center bg-fixed bg-opacity-25
+ }
+}
